@@ -41,7 +41,6 @@ const NRRForm = () => {
   const tossResult = watch("tossResult");
 
   const onSubmit = async (data) => {
-    // console.log(data);
     const requestBody = {
       teamId: data.team,
       oppositionTeamId: data.oppositionTeam,
@@ -62,35 +61,43 @@ const NRRForm = () => {
         NRR_CALCULATION_END_POINT,
         requestBody
       );
-      console.log(
-        "🚀 ~ file: Form.jsx:64 ~ onSubmit ~ response:",
-        response.data?.data
-      );
 
-      if (data.tossResult === BATTING) {
+      if (data.tossResult === BATTING && response.data?.data) {
         setResult(
           `${TEAM_BY_ID[data.team]} scores ${data.runsScored} runs in ${
             data.overs
           } overs, ${TEAM_BY_ID[data.team]} needs to restrict ${
             TEAM_BY_ID[data.oppositionTeam]
-          } between ${response.data?.data?.lowerBound?.lowerBound ?? ""} to ${
-            response.data?.data?.upperBound?.upperBound ?? ""
+          } ${
+            response.data?.data?.lowerBound?.lowerBound
+              ? ` between ${
+                  response.data?.data?.lowerBound?.lowerBound ?? ""
+                } to ${response.data?.data?.upperBound?.upperBound ?? ""}`
+              : `${response.data?.data?.upperBound?.upperBound}`
           } runs in  ${data.overs} overs\n Revised NRR of ${
             TEAM_BY_ID[data.team]
-          } will be between ${response.data?.data?.upperBound?.uNrr ?? ""} to ${
-            response.data?.data?.lowerBound?.lNrr ?? ""
+          } will be ${
+            response.data?.data?.lowerBound?.lNrr
+              ? `between  ${response.data?.data?.upperBound?.uNrr ?? ""} to ${
+                  response.data?.data?.lowerBound?.lNrr
+                }`
+              : `${response.data?.data?.upperBound?.uNrr}`
           }`
         );
-      } else {
+      } else if (data.tossResult === BOWLING && response.data?.data) {
         setResult(
-          `${TEAM_BY_ID[data.team]} needs to chase ${
-            data.runsScored
-          } runs between ${response.data?.data?.upperBound?.upperBound} and ${
-            response.data?.data?.lowerBound?.lowerBound
-          }\n Revised NRR of ${TEAM_BY_ID[data.team]} will be between ${
-            response.data?.data?.lowerBound?.lNrr
-          } to ${response.data?.data?.upperBound?.uNrr}`
+          `${TEAM_BY_ID[data.team]} needs to chase ${data.runsScored} runs ${
+            response.data?.data?.upperBound?.upperBound
+              ? `between ${response.data?.data?.upperBound?.upperBound} and ${response.data?.data?.lowerBound?.lowerBound}`
+              : `in ${response.data?.data?.lowerBound?.lowerBound}`
+          }\n Revised NRR of ${TEAM_BY_ID[data.team]} will be ${
+            response.data?.data?.upperBound?.uNrr
+              ? `between ${response.data?.data?.lowerBound?.lNrr} to ${response.data?.data?.upperBound?.uNrr}`
+              : `${response.data?.data?.lowerBound?.lNrr}`
+          } `
         );
+      } else {
+        setResult(response.data?.message);
       }
       setOpen(true);
     } catch (err) {
